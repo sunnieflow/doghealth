@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070d">
+<meta name="description" content="강아지 체중에 맞는 하루 급여량 계산과 주간 건강 체크인">
+<title>강아지 건강노트</title>
+<style>
+:root{color-scheme:dark;--bg:#05070d;--card:#0e1520;--line:#1d3a52;--text:#e8f1fa;--mute:#8fa6bb;--a:#4facfe;--b:#2575fc}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;padding-bottom:48px}
+.wrap{max-width:480px;margin:0 auto;padding:16px}
+header{text-align:center;padding:18px 0 4px}
+header .em{font-size:44px;line-height:1}
+header h1{margin:6px 0 2px;font-size:22px}
+header p{margin:0;color:var(--mute);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0}
+h2{font-size:15px;margin:0 0 10px;color:var(--a)}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--a),var(--b));cursor:pointer;text-decoration:none;text-align:center;font-family:inherit}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text);font-weight:600}
+.btn.sm{padding:10px;font-size:14px;border-radius:12px}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.chips button,.body-grid button{flex:1 1 auto;border:1px solid var(--line);background:#0a1018;color:var(--text);border-radius:10px;padding:9px 10px;font-size:13px;cursor:pointer;font-family:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.on{background:linear-gradient(135deg,var(--a),var(--b))!important;border-color:transparent!important;color:#fff!important;font-weight:700}
+label.fl{display:block;font-size:12px;color:var(--mute);margin:14px 0 6px}
+input,select{width:100%;background:#0a1018;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:15px;font-family:inherit}
+input[type=range]{padding:0;accent-color:var(--a)}
+.body-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.body-grid button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;font-size:12px}
+.body-grid svg{width:100%;height:auto}
+.mute{color:var(--mute);font-size:12px}
+.big{font-size:30px;font-weight:800;line-height:1.2}
+.big small{font-size:14px;font-weight:600;color:var(--mute)}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #1b2c3d;font-size:14px}
+.kv:last-child{border-bottom:0}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#0a1018;border:1px solid var(--line);font-size:12px;color:var(--mute);margin:0 6px 6px 0}
+.alert{border-radius:12px;padding:12px;margin:8px 0;font-size:14px;border:1px solid}
+.alert.urgent{background:#2a1013;border-color:#ff6b6b}
+.alert.warn{background:#2a2110;border-color:#ffb74d}
+.alert.info{background:#10202a;border-color:var(--line)}
+.q{margin:12px 0}
+.ql{font-size:13px;font-weight:700;margin-bottom:6px}
+.empty{padding:18px;text-align:center;color:var(--mute);font-size:13px}
+.wl{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed #1b2c3d;font-size:14px}
+.wl button{background:none;border:0;color:var(--mute);font-size:18px;cursor:pointer}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#16314a;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9}
+#toast.show{opacity:1}
+.ad{border-color:#24405a}
+details.adv{margin-top:16px;border-top:1px dashed #1b2c3d;padding-top:10px}
+details.adv summary{cursor:pointer;font-size:13px;color:var(--mute)}
+.adtag{font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:1px 6px;display:inline-block;margin-bottom:8px}
+.ad p{margin:6px 0 12px;font-size:14px}
+.adbox{display:block;text-decoration:none;color:var(--text);background:#0a1018;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center;margin:6px 0 12px}
+.adem{font-size:38px;letter-spacing:6px;line-height:1.25}
+.adtt{font-weight:700;margin-top:6px;color:var(--a);font-size:14px}
+.adbox img{max-width:100%;max-height:180px;border-radius:8px;display:block;margin:0 auto}
+.fine{font-size:11.5px;color:var(--mute);text-align:center;margin:12px 0 0!important}
+.disc{font-size:12.5px;color:var(--mute)}
+.disc b{color:var(--text)}
+svg text{fill:var(--mute);font-size:9px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="em" id="hEm"></div>
+  <h1>강아지 건강노트</h1>
+  <p>체중 · 급여량 · 주간 체크인을 30초로</p>
+</header>
+
+<section class="card" id="status"></section>
+
+<section class="card" id="checkin" hidden>
+  <h2>이번 주 체크인</h2>
+  <p class="mute" style="margin:0 0 6px">전부 평소와 같다면 아래 버튼 한 번이면 끝나요.</p>
+  <button class="btn" id="allSame" type="button">모두 평소와 같아요 · 바로 저장</button>
+  <div id="qs"></div>
+  <label class="fl">오늘 체중 (kg, 선택)</label>
+  <input id="ciKg" type="number" inputmode="decimal" step="0.05" placeholder="예: 4.2">
+  <div class="row" style="margin-top:14px">
+    <button class="btn ghost sm" id="ciCancel" type="button">닫기</button>
+    <button class="btn sm" id="ciSave" type="button">선택한 내용으로 저장</button>
+  </div>
+</section>
+
+<section id="alerts"></section>
+
+<section class="card">
+  <h2>하루 급여량</h2>
+  <div id="feed"></div>
+</section>
+
+<section class="card">
+  <h2>체중 기록</h2>
+  <div id="trend"></div>
+  <div id="chart"></div>
+  <div class="row" style="margin-top:12px">
+    <input id="wDate" type="date">
+    <input id="wKg" type="number" inputmode="decimal" step="0.05" placeholder="체중 (kg)">
+  </div>
+  <button class="btn sm" id="wAdd" type="button" style="margin-top:8px">체중 기록하기</button>
+  <div id="wList" style="margin-top:8px"></div>
+</section>
+
+<section class="card">
+  <h2>우리 아이 정보</h2>
+  <p class="mute" style="margin:0">급여량 계산에 쓰여요. 한 번만 입력하면 저장돼요.</p>
+  <div id="profile"></div>
+</section>
+
+<section class="card">
+  <h2>알림 · 앱처럼 사용 · 백업</h2>
+  <label class="fl" style="margin-top:0">매주 체크인 알림 (휴대폰 캘린더에 등록)</label>
+  <div class="row">
+    <select id="rDow"></select>
+    <input id="rTime" type="time" value="20:00">
+  </div>
+  <button class="btn sm" id="rIcs" type="button" style="margin-top:8px">📅 매주 반복 일정 등록하기</button>
+  <button class="btn ghost sm" id="install" type="button" style="margin-top:8px">📲 홈 화면에 추가 (앱처럼 사용)</button>
+  <div id="installHelp" class="mute" style="margin-top:8px" hidden></div>
+  <div class="row" style="margin-top:8px">
+    <button class="btn ghost sm" id="exp" type="button">기록 내보내기</button>
+    <button class="btn ghost sm" id="impBtn" type="button">기록 가져오기</button>
+  </div>
+  <input id="imp" type="file" accept="application/json,.json" hidden>
+  <p class="mute" style="margin:10px 0 0">기록은 이 기기의 브라우저에만 저장돼요. 기기를 바꾸거나 브라우저 데이터를 지우기 전에 내보내기로 백업하세요.</p>
+</section>
+
+<section class="card disc">
+  <b>안내</b><br>
+  이 앱은 기록과 참고 정보를 제공하며 진단이나 처방을 대신하지 않아요. 급여량은 일반적인 계산식에 따른 출발점이고 개체마다 다를 수 있어요. 2~4주 체중 변화를 보며 조절하고, 질환이 있거나 평소와 다른 증상이 이어지면 수의사와 상담하세요.
+</section>
+
+<section class="card ad" id="ad" hidden>
+  <p id="adLead"></p>
+  <a class="adbox" id="adBox" target="_blank" rel="sponsored noopener noreferrer"><div class="adem" id="adEm"></div><div class="adtt" id="adTt"></div></a>
+  <a class="btn" id="adLink" target="_blank" rel="sponsored noopener noreferrer"></a>
+  <p class="fine">이 게시물은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+</section>
+</div>
+<div id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+/* ====== 설정 ====== */
+var SP = {"key": "dog", "emoji": "🐶", "petWord": "강아지", "accent": "#4facfe", "stages": [["young", "12개월 미만"], ["adult", "성견 (1~6세)"], ["senior", "노령견 (7세+)"]], "activities": [["low", "적음 (산책 30분 미만)"], ["mid", "보통"], ["high", "많음 (1시간 이상)"]], "neuterBase": 1.6, "intactBase": 1.8, "lossFactor": 1.0, "seniorMult": 0.9, "kcalDry": 3700, "kcalWet": 1000, "feedType": "dry", "wetShare": 30, "meals": 2, "minKg": 0.5, "maxKg": 100, "questions": [{"id": "appetite", "label": "식욕", "opts": [{"v": "same", "l": "평소와 같아요"}, {"v": "less", "l": "줄었어요", "bad": true}, {"v": "more", "l": "늘었어요", "bad": true}]}, {"id": "stool", "label": "배변", "opts": [{"v": "same", "l": "평소와 같아요"}, {"v": "loose", "l": "묽거나 변비예요", "bad": true}]}, {"id": "energy", "label": "활력", "opts": [{"v": "same", "l": "평소와 같아요"}, {"v": "low", "l": "처지거나 잠이 늘었어요", "bad": true}]}, {"id": "water", "label": "물 마시는 양", "opts": [{"v": "same", "l": "평소와 같아요"}, {"v": "more", "l": "늘었어요", "bad": true}, {"v": "less", "l": "줄었어요", "bad": true}]}, {"id": "itch", "label": "긁기 · 눈물", "opts": [{"v": "same", "l": "평소와 같아요"}, {"v": "more", "l": "늘었어요", "bad": true}]}, {"id": "gait", "label": "걸음", "opts": [{"v": "same", "l": "평소와 같아요"}, {"v": "bad", "l": "절뚝이거나 불편해해요", "bad": true}]}]};
+/* 쿠팡 파트너스: 발급받은 링크를 url에 넣으면 맨 아래에 표시됩니다 */
+var COUPANG = {"url": "https://link.coupang.com/a/im0TjCbI0i", "image": "", "emoji": "⚖️ 🐶 🦴", "title": "반려동물 체중계 · 저울", "lead": ""};
+
+/* ====== 유틸 ====== */
+var DOW=['일','월','화','수','목','금','토'], ICSDOW=['SU','MO','TU','WE','TH','FR','SA'];
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function pad(n){return String(n).padStart(2,'0');}
+function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function today(){return ymd(new Date());}
+function dnum(s){var p=s.split('-').map(Number);return Date.UTC(p[0],p[1]-1,p[2])/86400000;}
+function diffDays(a,b){return Math.round(dnum(b)-dnum(a));}
+function md(s){var p=s.split('-');return Number(p[1])+'/'+Number(p[2]);}
+function toast(m){var t=$('toast');t.textContent=m;t.className='show';clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='';},2200);}
+
+/* ====== 저장소 ====== */
+var KEY='healthnote.'+SP.key+'.v1';
+function fresh(){return {profile:{name:'',stage:'adult',neutered:'yes',activity:'mid',body:1,disease:'no',kcalDry:'',kcalWet:'',feedType:SP.feedType,wetShare:SP.wetShare,packG:'',meals:SP.meals},weights:[],checkins:[],reminder:{dow:2,time:'20:00'}};}
+function cleanState(s){
+  var base=fresh(),p=base.profile,sp=(s&&typeof s.profile==='object'&&s.profile)||{};
+  function inSet(v,a){return a.indexOf(v)>=0;}
+  if(typeof sp.name==='string')p.name=sp.name.slice(0,20);
+  if(inSet(sp.stage,['young','adult','senior']))p.stage=sp.stage;
+  if(inSet(sp.neutered,['yes','no']))p.neutered=sp.neutered;
+  if(inSet(sp.activity,['low','mid','high']))p.activity=sp.activity;
+  if(inSet(sp.disease,['yes','no']))p.disease=sp.disease;
+  if(inSet(sp.feedType,['dry','mix','wet']))p.feedType=sp.feedType;
+  if(typeof sp.body!=='undefined'&&sp.body!==null&&inSet(Number(sp.body),[0,1,2,3]))p.body=Number(sp.body);
+  if(typeof sp.wetShare!=='undefined'&&inSet(Number(sp.wetShare),[30,50,80]))p.wetShare=Number(sp.wetShare);
+  if(typeof sp.meals!=='undefined'&&inSet(Number(sp.meals),[1,2,3,4]))p.meals=Number(sp.meals);
+  ['kcalDry','kcalWet','packG'].forEach(function(k){
+    var v=sp[k],n=Number(v);
+    p[k]=(v!==''&&v!==null&&typeof v!=='undefined'&&isFinite(n)&&n>0&&n<20000)?String(n):'';
+  });
+  var dre=/^\d{4}-\d{2}-\d{2}$/;
+  base.weights=(Array.isArray(s&&s.weights)?s.weights:[]).filter(function(x){return x&&typeof x.d==='string'&&dre.test(x.d)&&validKg(Number(x.kg));}).map(function(x){return {d:x.d,kg:Number(x.kg)};});
+  var known={};SP.questions.forEach(function(q){known[q.id]=q;});
+  base.checkins=(Array.isArray(s&&s.checkins)?s.checkins:[]).filter(function(x){return x&&typeof x.d==='string'&&dre.test(x.d)&&x.a&&typeof x.a==='object';}).map(function(x){
+    var a={};Object.keys(known).forEach(function(id){a[id]=(typeof x.a[id]==='string'&&findOpt(known[id],x.a[id]))?x.a[id]:'same';});
+    return {d:x.d,a:a};
+  });
+  var r=(s&&typeof s.reminder==='object'&&s.reminder)||{};
+  if(typeof r.dow!=='undefined'&&inSet(Number(r.dow),[0,1,2,3,4,5,6]))base.reminder.dow=Number(r.dow);
+  if(typeof r.time==='string'&&/^\d{2}:\d{2}$/.test(r.time))base.reminder.time=r.time;
+  return base;
+}
+function load(){
+  try{var raw=localStorage.getItem(KEY);if(raw)return cleanState(JSON.parse(raw));}catch(e){}
+  return fresh();
+}
+var state=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+/* ====== 데이터 도우미 ====== */
+function sortedW(){return state.weights.slice().sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});}
+function latestW(){var w=sortedW();return w.length?w[w.length-1]:null;}
+function sortedC(){return state.checkins.slice().sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});}
+function lastCheckin(){var c=sortedC();return c.length?c[c.length-1]:null;}
+function streak(){
+  var c=sortedC().map(function(x){return x.d;});
+  if(!c.length)return 0;
+  if(diffDays(c[c.length-1],today())>10)return 0;
+  var n=1,anchor=c[c.length-1];
+  for(var j=c.length-2;j>=0;j--){
+    var g=diffDays(c[j],anchor);
+    if(g<4)continue;
+    if(g<=10){n++;anchor=c[j];}else break;
+  }
+  return n;
+}
+function findOpt(q,v){for(var i=0;i<q.opts.length;i++)if(q.opts[i].v===v)return q.opts[i];return null;}
+
+/* ====== 급여량 계산 ====== */
+function calc(p,kg){
+  var rer=70*Math.pow(kg,0.75), f, mode;
+  if(p.body>=2){mode='loss';f=SP.lossFactor;}
+  else{
+    f=(p.neutered==='yes')?SP.neuterBase:SP.intactBase;
+    var am={low:0.9,mid:1,high:1.1}[p.activity]||1;
+    f*=am;
+    if(p.stage==='senior')f*=SP.seniorMult;
+    if(p.body===0){f*=1.1;mode='thin';}else mode='keep';
+  }
+  var kcal=Math.round(rer*f/5)*5;
+  var w=p.feedType==='dry'?0:(p.feedType==='wet'?1:(Number(p.wetShare)||30)/100);
+  var kd=Number(p.kcalDry)>0?Number(p.kcalDry):SP.kcalDry,kw=Number(p.kcalWet)>0?Number(p.kcalWet):SP.kcalWet;
+  var dry=kcal*(1-w)/kd*1000,wet=kcal*w/kw*1000;
+  return {kcal:kcal,dry:dry,wet:wet,mode:mode,factor:f,w:w,usedDefault:((w<1&&!(Number(p.kcalDry)>0))||(w>0&&!(Number(p.kcalWet)>0)))};
+}
+
+/* ====== 체중 추세 ====== */
+function trend(){
+  var w=sortedW();
+  if(w.length<2)return null;
+  var last=w[w.length-1];
+  var cands=w.slice(0,-1).filter(function(x){var dd=diffDays(x.d,last.d);return dd>=7&&dd<=28;});
+  if(!cands.length)return {need:true};
+  var ref=cands[0],days=diffDays(ref.d,last.d),pct=(last.kg-ref.kg)/ref.kg*100;
+  return {pct:pct,days:days,perWeek:pct/(days/7),ref:ref,last:last};
+}
+function trendMsg(){
+  var t=trend(),p=state.profile;
+  if(!t)return '체중을 2번 이상 기록하면 변화를 알려드려요.';
+  if(t.need)return '7일 이상 간격의 기록이 있으면 추세를 알려드려요.';
+  var base=t.days+'일간 '+(t.pct>0?'+':'')+t.pct.toFixed(1)+'% ('+t.ref.kg+'→'+t.last.kg+'kg). ';
+  if(p.body>=2){
+    if(t.perWeek>0)return base+'감량 중인데 체중이 늘고 있어요. 간식을 포함한 급여량을 다시 확인해 보세요.';
+    if(t.perWeek>-0.5)return base+'감량 속도가 느려요. 급여량을 5~10% 줄이고 2주 더 지켜보세요.';
+    if(t.perWeek>=-2)return base+'적절한 감량 속도예요. 지금 급여량을 유지하세요.';
+    return base+'감량이 너무 빨라요. '+(SP.key==='cat'?'고양이는 급격한 감량이 위험할 수 있어요. ':'')+'수의사와 상담하세요.';
+  }
+  if(p.body===0){
+    if(t.pct<0)return base+'마른 편인데 체중이 줄고 있어요. 수의사 상담을 권해요.';
+    return base;
+  }
+  if(Math.abs(t.pct)>=10)return base+'변화가 커요. 수의사 상담을 권해요.';
+  if(Math.abs(t.pct)>=5)return base+'체중이 변하고 있어요. 체형과 급여량을 다시 확인해 보세요.';
+  return base+'안정적이에요.';
+}
+
+/* ====== 이상 신호 ====== */
+function buildAlerts(){
+  var out=[],cs=sortedC(),last=cs[cs.length-1],prev=cs[cs.length-2];
+  if(last){
+    SP.questions.forEach(function(q){
+      var o=findOpt(q,last.a[q.id]);
+      if(o&&o.urgent)out.push({lv:'urgent',t:o.urgent});
+    });
+    if(prev){
+      SP.questions.forEach(function(q){
+        var a=findOpt(q,last.a[q.id]),b=findOpt(q,prev.a[q.id]);
+        if(a&&b&&a.bad&&b.bad&&!a.urgent&&diffDays(prev.d,last.d)<=21){
+          out.push({lv:'warn',t:'「'+q.label+'」 변화가 2번 연속 기록됐어요. 이런 변화가 이어지면 수의사 상담을 권해요.'});
+        }
+      });
+    }
+    if(last.a.appetite==='less'&&last.a.energy==='low'){
+      out.push({lv:'warn',t:'식욕이 줄고 기운도 없다고 기록했어요. 상태가 이어지면 병원에 문의해 보세요.'});
+    }
+    if(SP.key==='cat'&&last.a.appetite==='less'){
+      out.push({lv:'warn',t:'고양이는 이틀 이상 거의 먹지 않으면 위험해질 수 있어요. 식욕 저하가 하루 이틀 이상 이어지면 병원에 문의하세요.'});
+    }
+  }
+  var t=trend();
+  if(t&&!t.need&&t.pct<=-10){
+    out.push({lv:'warn',t:'최근 '+t.days+'일 사이 체중이 '+Math.abs(t.pct).toFixed(1)+'% 줄었어요. 수의사 상담을 권해요.'});
+  }
+  return out;
+}
+
+/* ====== 렌더링 ====== */
+function renderStatus(){
+  var lc=lastCheckin(),s=streak(),line;
+  if(!lc)line='아직 체크인 기록이 없어요. 30초면 끝나요.';
+  else{var dd=diffDays(lc.d,today());line=dd<=0?'오늘 체크인을 완료했어요 ✅':'마지막 체크인 '+dd+'일 전'+(dd>7?' · 이번 주 체크인이 필요해요':'');}
+  var name=state.profile.name?esc(state.profile.name)+'의 ':'';
+  $('status').innerHTML=
+    '<div class="mute">'+name+'이번 주 상태</div>'+
+    '<div style="margin:6px 0 12px;font-size:15px">'+esc(line)+'</div>'+
+    (s>0?'<span class="pill">🔥 '+s+'주 연속 기록</span>':'')+
+    '<span class="pill">체크인 '+state.checkins.length+'회</span>'+
+    '<span class="pill">체중 기록 '+state.weights.length+'회</span>'+
+    '<button class="btn" id="openCi" type="button" style="margin-top:8px">📝 이번 주 체크인 하기</button>';
+  $('openCi').onclick=openCheckin;
+}
+
+function bodySvg(i){
+  var ry=[10,14,19,25][i],rx=30;
+  return '<svg viewBox="0 0 90 60" aria-hidden="true"><ellipse cx="38" cy="30" rx="'+rx+'" ry="'+ry+'" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="76" cy="30" r="9" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M8 30 Q2 24 4 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
+}
+function seg(k,opts,cur){
+  return '<div class="seg" data-k="'+k+'">'+opts.map(function(o){
+    return '<button type="button" data-v="'+o[0]+'" class="'+(String(cur)===String(o[0])?'on':'')+'">'+o[1]+'</button>';
+  }).join('')+'</div>';
+}
+function renderProfile(){
+  var p=state.profile;
+  var bodyLabels=['마른 편','적당해요','통통해요','많이 통통'];
+  var bodyDesc=['갈비뼈가 눈에 띄고 허리가 잘록해요','갈비뼈가 가볍게 만져지고 허리선이 보여요','갈비뼈를 만지기 어렵고 허리선이 흐려요','허리선이 없고 배가 처져요'];
+  var h='';
+  h+='<label class="fl">이름 (선택)</label><input id="pName" maxlength="20" placeholder="이름" value="'+esc(p.name)+'">';
+  h+='<label class="fl">나이대</label>'+seg('stage',SP.stages,p.stage);
+  h+='<label class="fl">중성화</label>'+seg('neutered',[['yes','했어요'],['no','안 했어요']],p.neutered);
+  h+='<label class="fl">활동량</label>'+seg('activity',SP.activities,p.activity);
+  h+='<label class="fl">체형 (가장 비슷한 것)</label><div class="body-grid" data-k="body">';
+  for(var i=0;i<4;i++){h+='<button type="button" data-v="'+i+'" class="'+(p.body===i?'on':'')+'">'+bodySvg(i)+'<span>'+bodyLabels[i]+'</span></button>';}
+  h+='</div><div class="mute" style="margin-top:6px">'+bodyDesc[p.body]+'</div>';
+  h+='<label class="fl">진단받은 질환이 있나요? (신장·심장·당뇨·갑상선·췌장 등) 또는 임신·수유 중인가요?</label>'+seg('disease',[['no','없어요'],['yes','있어요']],p.disease);
+  h+='<label class="fl">먹이는 사료</label>'+seg('feedType',[['dry','알갱이 사료만 (건식)'],['mix','알갱이 + 캔·파우치'],['wet','캔·파우치만 (습식)']],p.feedType);
+  if(p.feedType==='mix')h+='<label class="fl">캔·파우치는 얼마나 주나요?</label>'+seg('wetShare',[[30,'조금'],[50,'절반 정도'],[80,'대부분']],p.wetShare);
+  if(p.feedType!=='dry')h+='<label class="fl">캔·파우치 1개의 용량 (g, 선택 · 포장지에 적혀 있어요)</label><input id="pPack" type="number" inputmode="numeric" placeholder="예: 70" value="'+esc(p.packG)+'">';
+  h+='<label class="fl">하루 급여 횟수</label>'+seg('meals',[[1,'1회'],[2,'2회'],[3,'3회'],[4,'4회']],p.meals);
+  h+='<details class="adv"><summary>사료 열량을 알고 있나요? (선택)</summary><p class="mute" style="margin:8px 0 0">비워 두면 평균값(알갱이 '+SP.kcalDry+', 캔·파우치 '+SP.kcalWet+' kcal/kg)으로 계산해요. 포장지에 대사에너지(ME) 열량이 kcal/kg로 적혀 있다면 넣어 주세요.</p>'+
+    '<label class="fl">알갱이 사료(건식) 열량 (kcal/kg)</label><input id="pKDry" type="number" inputmode="numeric" placeholder="'+SP.kcalDry+'" value="'+esc(p.kcalDry)+'">'+
+    '<label class="fl">캔·파우치(습식) 열량 (kcal/kg)</label><input id="pKWet" type="number" inputmode="numeric" placeholder="'+SP.kcalWet+'" value="'+esc(p.kcalWet)+'"></details>';
+  $('profile').innerHTML=h;
+}
+
+function renderFeed(){
+  var p=state.profile,w=latestW(),el=$('feed');
+  if(p.disease==='yes'){el.innerHTML='<div class="alert info">질환이 있거나 임신·수유 중이면 일반 계산식을 적용하지 않아요. 급여량은 담당 수의사와 정해 주세요.</div>';return;}
+  if(p.stage==='young'){el.innerHTML='<div class="alert info">성장기에는 계산식 대신 사료 포장지의 월령별 급여표를 따르고, 성장 상황은 수의사와 확인하세요. 체중 기록과 체크인은 그대로 사용할 수 있어요.</div>';return;}
+  if(!w){el.innerHTML='<div class="empty">체중을 기록하면 하루 급여량을 계산해 드려요</div>';return;}
+  var r=calc(p,w.kg),m=Math.max(1,Number(p.meals)||1);
+  var modeTxt={keep:'현재 체중 유지 기준',loss:'체중 감량 기준 (현재 체중으로 계산한 근사값이에요)',thin:'마른 편이라 열량을 조금 높여 계산했어요. 수의사 상담을 권해요'}[r.mode];
+  var h='<div class="mute">'+modeTxt+' · 최근 체중 '+w.kg+'kg ('+md(w.d)+')</div>';
+  h+='<div class="big" style="margin:8px 0 10px">'+r.kcal+' <small>kcal / 일</small></div>';
+  if(r.w<1)h+='<div class="kv"><span>알갱이 사료 (건식)</span><b>'+Math.round(r.dry)+' g <span class="mute">(끼니당 '+Math.round(r.dry/m)+'g)</span></b></div>';
+  if(r.w>0){
+    var pk=Number(p.packG),packTxt=pk>0?'하루 약 '+(Math.round(r.wet/pk*10)/10)+'개 · ':'';
+    h+='<div class="kv"><span>캔·파우치 (습식)</span><b>'+Math.round(r.wet)+' g <span class="mute">('+packTxt+'끼니당 '+Math.round(r.wet/m)+'g)</span></b></div>';
+  }
+  h+='<div class="kv"><span>간식 한도 (하루 열량의 10%)</span><b>약 '+Math.round(r.kcal*0.1)+' kcal</b></div>';
+  if(r.usedDefault)h+='<p class="mute" style="margin:10px 0 0">사료 열량을 입력하지 않아 평균값으로 계산했어요. 먹이는 사료의 포장지 급여표도 함께 확인해 보세요.</p>';
+  h+='<p class="mute" style="margin:10px 0 0">간식을 주면 그만큼 사료를 줄여 주세요. 계산 결과는 출발점이에요. 2~4주 체중 변화를 보고 5~10%씩 조절하세요.</p>';
+  el.innerHTML=h;
+}
+
+function renderWeight(){
+  $('trend').innerHTML='<div class="alert info" style="margin-top:0">'+esc(trendMsg())+'</div>';
+  var w=sortedW().slice(-12),el=$('chart');
+  if(!w.length){el.innerHTML='<div class="empty">체중을 기록하면 그래프가 나타나요</div>';}
+  else{
+    var W=320,H=150,pl=36,pr=12,pt=14,pb=24;
+    var ks=w.map(function(x){return x.kg;}),mn=Math.min.apply(null,ks),mx=Math.max.apply(null,ks);
+    if(mx-mn<0.2){var mid=(mx+mn)/2;mn=mid-0.1;mx=mid+0.1;}
+    var padv=(mx-mn)*0.15;mn-=padv;mx+=padv;
+    var dec=(mx-mn)<1?2:1;
+    function X(i){return w.length===1?(pl+W-pr)/2:pl+(W-pl-pr)*i/(w.length-1);}
+    function Y(v){return pt+(H-pt-pb)*(1-(v-mn)/(mx-mn));}
+    var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="체중 변화 그래프">';
+    [mx,(mx+mn)/2,mn].forEach(function(v){
+      s+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="#1d3a52" stroke-dasharray="3 3"/>';
+      s+='<text x="'+(pl-4)+'" y="'+(Y(v)+3)+'" text-anchor="end">'+v.toFixed(dec)+'</text>';
+    });
+    if(w.length>1){
+      s+='<polyline fill="none" stroke="'+SP.accent+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="'+w.map(function(x,i){return X(i)+','+Y(x.kg);}).join(' ')+'"/>';
+    }
+    w.forEach(function(x,i){s+='<circle cx="'+X(i)+'" cy="'+Y(x.kg)+'" r="3.5" fill="'+SP.accent+'"/>';});
+    s+='<text x="'+X(0)+'" y="'+(H-6)+'" text-anchor="'+(w.length===1?'middle':'start')+'">'+md(w[0].d)+'</text>';
+    if(w.length>1)s+='<text x="'+X(w.length-1)+'" y="'+(H-6)+'" text-anchor="end">'+md(w[w.length-1].d)+'</text>';
+    s+='</svg>';
+    el.innerHTML=s;
+  }
+  var list=sortedW().slice(-5).reverse();
+  $('wList').innerHTML=list.map(function(x){
+    return '<div class="wl"><span>'+esc(x.d)+'</span><b>'+esc(x.kg)+' kg</b><button type="button" data-del="'+esc(x.d)+'" aria-label="삭제">×</button></div>';
+  }).join('');
+}
+
+function renderAlerts(){
+  var a=buildAlerts();
+  $('alerts').innerHTML=a.map(function(x){
+    return '<div class="alert '+x.lv+'">'+(x.lv==='urgent'?'🚨 ':'⚠️ ')+esc(x.t)+'</div>';
+  }).join('');
+}
+
+function renderReminder(){
+  var sel=$('rDow');
+  if(!sel.options.length){DOW.forEach(function(d,i){var o=document.createElement('option');o.value=i;o.textContent=d+'요일';sel.appendChild(o);});}
+  sel.value=state.reminder.dow;
+  $('rTime').value=state.reminder.time;
+}
+
+function renderAd(){
+  var local=(location.protocol==='file:'||location.hostname==='localhost'||location.hostname==='127.0.0.1');
+  if(!COUPANG.url&&!local){$('ad').hidden=true;return;}
+  $('ad').hidden=false;
+  $('adLead').textContent=COUPANG.lead||'';$('adLead').hidden=!COUPANG.lead;
+  var em=$('adEm');em.textContent='';
+  if(COUPANG.image){
+    var img=document.createElement('img');
+    img.src=COUPANG.image;img.alt=COUPANG.title;img.loading='lazy';img.referrerPolicy='no-referrer';
+    em.appendChild(img);
+  }else{em.textContent=COUPANG.emoji||'⚖️';}
+  $('adTt').textContent=COUPANG.title;
+  var a=$('adLink'),box=$('adBox');
+  a.textContent=COUPANG.title+' 보러가기';
+  if(COUPANG.url){a.href=COUPANG.url;box.href=COUPANG.url;}
+  else{
+    a.removeAttribute('href');box.removeAttribute('href');
+    a.textContent='[미리보기] 쿠팡 파트너스 링크를 COUPANG.url에 넣어 주세요';a.style.opacity='.6';
+  }
+}
+
+function renderAll(){
+  $('hEm').textContent=SP.emoji;
+  renderStatus();renderProfile();renderFeed();renderWeight();renderAlerts();renderReminder();renderAd();
+}
+
+/* ====== 체크인 ====== */
+var ans={};
+function resetAns(){ans={};SP.questions.forEach(function(q){ans[q.id]='same';});}
+function openCheckin(){
+  resetAns();
+  $('qs').innerHTML=SP.questions.map(function(q){
+    return '<div class="q"><div class="ql">'+esc(q.label)+'</div><div class="chips" data-q="'+q.id+'">'+
+      q.opts.map(function(o){return '<button type="button" data-v="'+o.v+'" class="'+(o.v==='same'?'on':'')+'">'+esc(o.l)+'</button>';}).join('')+'</div></div>';
+  }).join('');
+  $('ciKg').value='';
+  $('checkin').hidden=false;
+  $('checkin').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function addWeight(date,kg){
+  state.weights=state.weights.filter(function(x){return x.d!==date;});
+  state.weights.push({d:date,kg:Math.round(kg*100)/100});
+}
+function validKg(kg){return isFinite(kg)&&kg>=SP.minKg&&kg<=SP.maxKg;}
+function saveCheckin(){
+  var t=today(),kgRaw=$('ciKg').value.trim();
+  if(kgRaw!==''){
+    var kg=parseFloat(kgRaw);
+    if(!validKg(kg)){toast('체중은 '+SP.minKg+'~'+SP.maxKg+'kg 사이로 입력해 주세요');return;}
+    addWeight(t,kg);
+  }
+  state.checkins=state.checkins.filter(function(x){return x.d!==t;});
+  state.checkins.push({d:t,a:Object.assign({},ans)});
+  save();$('checkin').hidden=true;renderAll();
+  var n=streak();
+  toast(n>1?n+'주 연속 기록 중이에요 🔥':'체크인을 저장했어요');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ====== 알림(.ics) ====== */
+function icsDate(d){return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'T'+pad(d.getHours())+pad(d.getMinutes())+'00';}
+function makeIcs(){
+  var dow=Number($('rDow').value),time=$('rTime').value||'20:00',hm=time.split(':').map(Number);
+  var now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),now.getDate(),hm[0],hm[1],0);
+  var diff=(dow-start.getDay()+7)%7;start.setDate(start.getDate()+diff);
+  if(start<=now)start.setDate(start.getDate()+7);
+  var end=new Date(start.getTime()+10*60000);
+  var name=(state.profile.name||SP.petWord)+' 주간 체크인';
+  var url=(/^https?:/.test(location.href))?location.href.split('#')[0]:'';
+  var L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//healthnote//KO','CALSCALE:GREGORIAN','BEGIN:VEVENT',
+    'UID:'+Date.now()+'-'+SP.key+'@healthnote',
+    'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,''),
+    'DTSTART:'+icsDate(start),'DTEND:'+icsDate(end),
+    'RRULE:FREQ=WEEKLY;BYDAY='+ICSDOW[dow],
+    'SUMMARY:'+name,
+    'DESCRIPTION:체중과 컨디션을 30초 동안 기록해요.'+(url?'\\n'+url:''),
+    url?'URL:'+url:'',
+    'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+name,'TRIGGER:PT0M','END:VALARM',
+    'END:VEVENT','END:VCALENDAR'].filter(Boolean);
+  return L.join('\r\n');
+}
+function download(name,type,text){
+  var blob=new Blob([text],{type:type}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
+}
+
+/* ====== 이벤트 ====== */
+document.addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  var seg=b.closest('.seg,.body-grid');
+  if(seg&&seg.dataset.k&&$('profile').contains(seg)){
+    var k=seg.dataset.k,v=b.dataset.v;
+    if(k==='body'||k==='meals'||k==='wetShare')v=Number(v);
+    state.profile[k]=v;save();renderProfile();renderFeed();renderWeight();return;
+  }
+  var chips=b.closest('.chips');
+  if(chips&&chips.dataset.q){
+    ans[chips.dataset.q]=b.dataset.v;
+    [].forEach.call(chips.children,function(c){c.classList.toggle('on',c===b);});return;
+  }
+  if(b.dataset.del){
+    state.weights=state.weights.filter(function(x){return x.d!==b.dataset.del;});
+    save();renderAll();return;
+  }
+});
+document.addEventListener('input',function(e){
+  var t=e.target,p=state.profile;
+  if(t.id==='pName'){p.name=t.value;save();renderStatus();}
+  else if(t.id==='pKDry'){p.kcalDry=t.value;save();renderFeed();}
+  else if(t.id==='pKWet'){p.kcalWet=t.value;save();renderFeed();}
+  else if(t.id==='pPack'){p.packG=t.value;save();renderFeed();}
+});
+$('allSame').onclick=function(){resetAns();saveCheckin();};
+$('ciSave').onclick=saveCheckin;
+$('ciCancel').onclick=function(){$('checkin').hidden=true;};
+$('wDate').value=today();
+$('wAdd').onclick=function(){
+  var d=$('wDate').value||today(),kg=parseFloat($('wKg').value);
+  if(!validKg(kg)){toast('체중은 '+SP.minKg+'~'+SP.maxKg+'kg 사이로 입력해 주세요');return;}
+  addWeight(d,kg);save();$('wKg').value='';renderAll();toast('체중을 기록했어요');
+};
+$('rDow').onchange=function(){state.reminder.dow=Number(this.value);save();};
+$('rTime').onchange=function(){state.reminder.time=this.value;save();};
+$('rIcs').onclick=function(){
+  state.reminder.dow=Number($('rDow').value);state.reminder.time=$('rTime').value||'20:00';save();
+  download('checkin-'+SP.key+'.ics','text/calendar;charset=utf-8',makeIcs());
+  toast('내려받은 파일을 열어 캘린더에 추가하세요');
+};
+var deferred=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;});
+$('install').onclick=function(){
+  if(deferred){deferred.prompt();deferred=null;return;}
+  var h=$('installHelp');h.hidden=false;
+  h.innerHTML='<b>아이폰(사파리)</b>: 하단 공유 버튼 → 「홈 화면에 추가」<br><b>안드로이드(크롬)</b>: 우측 상단 메뉴(⋮) → 「홈 화면에 추가」 또는 「앱 설치」';
+};
+$('exp').onclick=function(){
+  download('healthnote-'+SP.key+'-'+today()+'.json','application/json',JSON.stringify(state,null,1));
+};
+$('impBtn').onclick=function(){$('imp').click();};
+$('imp').onchange=function(){
+  var f=this.files&&this.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var s=JSON.parse(r.result);
+      if(!s||typeof s!=='object'||!Array.isArray(s.weights)||!Array.isArray(s.checkins))throw new Error('x');
+      state=cleanState(s);save();renderAll();toast('기록을 가져왔어요');
+    }catch(err){toast('가져올 수 없는 파일이에요');}
+  };
+  r.readAsText(f);this.value='';
+};
+document.addEventListener('visibilitychange',function(){if(!document.hidden){renderStatus();}});
+
+renderAll();
+})();
+</script>
+</body>
+</html>
